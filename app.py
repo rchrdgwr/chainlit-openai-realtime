@@ -21,10 +21,6 @@ async def on_action(action):
     cl.user_session.set("language", "icelandic")
     await cl.Message(content="Responses from the Chatbot will be in Icelandic").send()
 
-@cl.action_callback("ask_question")
-async def on_action(action):
-    cl.user_session.set("question", "How much wood would a woodchuck chuck if a woodchuck could chuck wood?")
-    await cl.Message(content="Asking my assistant a question").send()
 
 async def setup_openai_realtime():
     """Instantiate and configure the OpenAI Realtime Client"""
@@ -77,7 +73,6 @@ async def start():
     actions = [
         cl.Action(name="english", value="english", description="English"),
         cl.Action(name="icelandic", value="icelandic", description="Icelandic"),
-        cl.Action(name="ask_question", value="ask_question", description="Ask my assistant a question")
     ]
 
     await cl.Message(content="Languages", actions=actions).send()
@@ -116,11 +111,8 @@ async def on_audio_start():
 async def on_audio_chunk(chunk: cl.InputAudioChunk):
     openai_realtime: RealtimeClient = cl.user_session.get("openai_realtime")
     language = cl.user_session.get("language", "english")  
-    question = cl.user_session.get("question", "How much wood would a woodchuck chuck if a woodchuck could chuck wood?")
     if openai_realtime and openai_realtime.is_connected() and language:
         await openai_realtime.update_session(instructions=f"You will answer in {language}")
-    if openai_realtime and openai_realtime.is_connected() and question:
-        await openai_realtime.update_session(instructions=f"You will answer the question: {question}")
     if openai_realtime and openai_realtime.is_connected():
         await openai_realtime.append_input_audio(chunk.data)
     else:
